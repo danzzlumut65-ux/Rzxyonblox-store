@@ -1,30 +1,40 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — RZXYONBLOX</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#080808;color:#fff}header{padding:18px 6%;border-bottom:1px solid #292929;display:flex;justify-content:space-between}main{max-width:1000px;margin:auto;padding:40px 6%}.box{background:#111;border:1px solid #292929;border-radius:16px;padding:22px;margin-bottom:20px}h1{margin-top:0}h2{font-size:20px}label{display:block;color:#aaa;font-size:13px;margin:12px 0 6px}input,textarea{width:100%;padding:12px;background:#090909;border:1px solid #333;border-radius:9px;color:#fff}button{padding:11px 15px;border:0;border-radius:9px;background:#e51b2b;color:#fff;font-weight:bold;cursor:pointer}.secondary{background:#222}.danger{background:#8d111b}.row{display:grid;grid-template-columns:70px 1fr 130px 1fr auto;gap:10px;align-items:end;border-bottom:1px solid #252525;padding:15px 0}.row input{padding:10px}.login{max-width:420px;margin:100px auto;padding:30px}.msg{color:#63e67a;margin-top:10px}@media(max-width:700px){.row{grid-template-columns:1fr}.row button{width:100%}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#080808;color:#fff}header{padding:18px 6%;border-bottom:1px solid #292929;display:flex;justify-content:space-between}main{max-width:1100px;margin:auto;padding:40px 6%}.box{background:#111;border:1px solid #292929;border-radius:16px;padding:22px;margin-bottom:20px}h1{margin-top:0}h2{font-size:20px}label{display:block;color:#aaa;font-size:13px;margin:12px 0 6px}input,textarea,select{width:100%;padding:12px;background:#090909;border:1px solid #333;border-radius:9px;color:#fff}button{padding:11px 15px;border:0;border-radius:9px;background:#e51b2b;color:#fff;font-weight:bold;cursor:pointer}.secondary{background:#222}.danger{background:#8d111b}.row{display:grid;grid-template-columns:70px 1.2fr 120px 1.5fr auto;gap:10px;align-items:end;border-bottom:1px solid #252525;padding:15px 0}.couponrow{display:grid;grid-template-columns:1.2fr 100px 120px 120px 120px 1fr auto;gap:10px;align-items:end;border-bottom:1px solid #252525;padding:15px 0}.msg{color:#63e67a;margin-top:10px}.login{max-width:420px;margin:100px auto}.hint{color:#888;font-size:12px;line-height:1.5}.pill{display:inline-block;padding:5px 8px;border-radius:99px;background:#222;color:#aaa;font-size:12px}@media(max-width:800px){.row,.couponrow{grid-template-columns:1fr}.row button,.couponrow button{width:100%}}
 </style></head><body>
 <header><b>RZXYONBLOX ADMIN</b><a href="index.html">← Toko</a></header>
-<div id="login" class="box login"><h1>Login Admin</h1><label>Username</label><input id="user"><label>Password</label><input id="pass" type="password"><button style="margin-top:15px;width:100%" onclick="login()">Masuk</button><p style="color:#777;font-size:12px">Login admin pribadi RZXYONBLOX.</p></div>
+<div id="login" class="box login"><h1>Login Admin</h1><label>Username</label><input id="user"><label>Password</label><input id="pass" type="password"><button style="margin-top:15px;width:100%" onclick="login()">Masuk</button><p class="hint">Login admin pribadi RZXYONBLOX.</p></div>
 <main id="app" style="display:none">
-<div class="box"><h1>Dashboard</h1><p style="color:#999">Kelola produk dan nomor WhatsApp toko dari sini.</p></div>
-<div class="box"><h2>Pengaturan Toko</h2><label>Nomor WhatsApp (format internasional, tanpa +)</label><input id="wa"><button style="margin-top:12px" onclick="saveSettings()">Simpan Pengaturan</button><p id="msg" class="msg"></p></div>
-<div class="box"><h2>Produk</h2><div id="list"></div><button onclick="addProduct()">+ Tambah Produk</button> <button class="secondary" onclick="resetProducts()">Reset Produk</button></div>
+<div class="box"><h1>Dashboard</h1><p style="color:#999">Produk dan kode diskon tersimpan online setelah Supabase dikonfigurasi.</p></div>
+<div class="box"><h2>Produk</h2><div id="list"></div><button onclick="addProduct()">+ Tambah Produk</button> <button class="secondary" onclick="loadProducts()">Muat Ulang</button><p id="pmsg" class="msg"></p></div>
+<div class="box"><h2>Buat Kode Diskon</h2>
+<label>Kode</label><input id="ccode" placeholder="Contoh: RZXY10">
+<label>Tipe</label><select id="ctype"><option value="percent">Persen (%)</option><option value="fixed">Potongan Rupiah</option></select>
+<label>Nilai</label><input id="cvalue" type="number" min="0" placeholder="10">
+<label>Minimal belanja (opsional)</label><input id="cmin" type="number" min="0" placeholder="0">
+<label>Batas penggunaan (opsional)</label><input id="cmax" type="number" min="1" placeholder="Kosong = tanpa batas">
+<label>Kedaluwarsa (opsional)</label><input id="cexp" type="datetime-local">
+<label>Status</label><select id="cactive"><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
+<button style="margin-top:14px" onclick="createCoupon()">+ Simpan Kode Diskon</button><p id="cmsg" class="msg"></p></div>
+<div class="box"><h2>Daftar Kode Diskon</h2><div id="coupons"></div></div>
 </main>
 <script>
-const DEFAULT=[
-{id:1,icon:"🛡️",name:"Bantuan Akun Roblox",price:5000,desc:"Bantuan umum terkait akun dan fitur resmi Roblox."},
-{id:2,icon:"🎮",name:"Bantuan Pengaturan Akun",price:10000,desc:"Panduan dan bantuan pengaturan akun Roblox."},
-{id:3,icon:"🔧",name:"Bantuan Masalah Akun",price:15000,desc:"Bantuan troubleshooting sesuai prosedur resmi."},
-{id:4,icon:"⭐",name:"Paket Bantuan Premium",price:20000,desc:"Prioritas bantuan dan panduan penggunaan fitur resmi."}];
-let products=JSON.parse(localStorage.getItem("rz_products")||"null")||DEFAULT;
-function login(){if(document.getElementById("user").value==="rzxyadmin"&&document.getElementById("pass").value==="adminganteng"){localStorage.setItem("rz_admin","1");show()}else alert("Username atau password salah.")}
-function show(){document.getElementById("login").style.display="none";document.getElementById("app").style.display="block";document.getElementById("wa").value=localStorage.getItem("rz_whatsapp")||"628979844790";render()}
-function render(){document.getElementById("list").innerHTML=products.map((p,i)=>`<div class="row"><input value="${p.icon}" onchange="edit(${i},'icon',this.value)"><input value="${p.name}" onchange="edit(${i},'name',this.value)"><input type="number" value="${p.price}" onchange="edit(${i},'price',Number(this.value))"><input value="${p.desc}" onchange="edit(${i},'desc',this.value)"><button class="danger" onclick="del(${i})">Hapus</button></div>`).join("")}
-function edit(i,k,v){products[i][k]=v;save()}
-function save(){localStorage.setItem("rz_products",JSON.stringify(products))}
-function del(i){if(confirm("Hapus produk ini?")){products.splice(i,1);save();render()}}
-function addProduct(){products.push({id:Date.now(),icon:"🆕",name:"Produk Baru",price:0,desc:"Deskripsi produk."});save();render()}
-function resetProducts(){if(confirm("Reset semua produk ke bawaan?")){products=DEFAULT.map(x=>({...x}));save();render()}}
-function saveSettings(){localStorage.setItem("rz_whatsapp",document.getElementById("wa").value.replace(/\D/g,""));document.getElementById("msg").textContent="Pengaturan tersimpan."}
-if(localStorage.getItem("rz_admin")==="1")show();
+const SUPABASE_URL="https://ktjndrjhzqfaqjckzxkd.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_Z3WWT1Cu6GrTmCV--T748A_DxxmDgF4";
+const DEFAULT=[{id:1,icon:"🛡️",name:"Bantuan Akun Roblox",price:5000,desc:"Bantuan umum terkait akun dan fitur resmi Roblox."},{id:2,icon:"🎮",name:"Bantuan Pengaturan Akun",price:10000,desc:"Panduan dan bantuan pengaturan akun Roblox."},{id:3,icon:"🔧",name:"Bantuan Masalah Akun",price:15000,desc:"Bantuan troubleshooting sesuai prosedur resmi."},{id:4,icon:"⭐",name:"Paket Bantuan Premium",price:20000,desc:"Prioritas bantuan dan panduan penggunaan fitur resmi."}];
+let products=[];
+async function api(path,opts={}){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...opts,headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json",Prefer:"return=representation",...(opts.headers||{})}});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json()}
+function login(){if(document.getElementById("user").value==="rzxyadmin"&&document.getElementById("pass").value==="adminganteng"){sessionStorage.setItem("rz_admin","1");show()}else alert("Username atau password salah.")}
+function show(){document.getElementById("login").style.display="none";document.getElementById("app").style.display="block";loadProducts();loadCoupons()}
+async function loadProducts(){try{products=await api("products?select=*&order=id");render()}catch(e){products=DEFAULT;render();document.getElementById("pmsg").textContent="Database belum terhubung. Produk masih mode demo.";}}
+function render(){document.getElementById("list").innerHTML=products.map((p,i)=>`<div class="row"><input value="${esc(p.icon||"")}" onchange="edit(${p.id},'icon',this.value)"><input value="${esc(p.name)}" onchange="edit(${p.id},'name',this.value)"><input type="number" value="${p.price}" onchange="edit(${p.id},'price',Number(this.value))"><input value="${esc(p.desc||"")}" onchange="edit(${p.id},'desc',this.value)"><button class="danger" onclick="delProduct(${p.id})">Hapus</button></div>`).join("")}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+async function edit(id,k,v){try{await api("products?id=eq."+id,{method:"PATCH",body:JSON.stringify({[k]:v})});document.getElementById("pmsg").textContent="Produk tersimpan online."}catch(e){alert("Gagal menyimpan: "+e.message)}}
+async function addProduct(){try{await api("products",{method:"POST",body:JSON.stringify({icon:"🆕",name:"Produk Baru",price:0,desc:"Deskripsi produk.",active:true})});loadProducts()}catch(e){alert("Database belum terhubung.")}}
+async function delProduct(id){if(!confirm("Hapus produk ini?"))return;try{await api("products?id=eq."+id,{method:"DELETE"});loadProducts()}catch(e){alert("Gagal menghapus.")}}
+async function createCoupon(){const code=document.getElementById("ccode").value.trim().toUpperCase(),value=Number(document.getElementById("cvalue").value),type=document.getElementById("ctype").value,min=Number(document.getElementById("cmin").value)||0,max=document.getElementById("cmax").value?Number(document.getElementById("cmax").value):null,exp=document.getElementById("cexp").value||null,active=document.getElementById("cactive").value==="true";if(!code||value<=0)return alert("Isi kode dan nilai diskon.");if(type==="percent"&&value>100)return alert("Diskon persen maksimal 100%.");try{await api("coupons",{method:"POST",body:JSON.stringify({code,type,value,min_total:min,max_uses:max,used_count:0,expires_at:exp?new Date(exp).toISOString():null,active})});document.getElementById("cmsg").textContent="Kode diskon berhasil dibuat.";["ccode","cvalue","cmin","cmax","cexp"].forEach(id=>document.getElementById(id).value="");loadCoupons()}catch(e){alert("Gagal membuat kode: "+e.message)}}
+async function loadCoupons(){if(!SUPABASE_URL.startsWith("http")){document.getElementById("coupons").innerHTML='<p class="hint">Hubungkan Supabase terlebih dahulu untuk melihat kode diskon online.</p>';return}try{const rows=await api("coupons?select=*&order=id.desc");document.getElementById("coupons").innerHTML=rows.map(c=>`<div class="couponrow"><div><b>${esc(c.code)}</b><br><span class="pill">${c.type==="percent"?c.value+"%":"Rp"+Number(c.value).toLocaleString("id-ID")}</span></div><div>${c.min_total?"Rp"+Number(c.min_total).toLocaleString("id-ID"):"-"}</div><div>${c.max_uses===null?"∞":c.used_count+"/"+c.max_uses}</div><div>${c.expires_at?new Date(c.expires_at).toLocaleString("id-ID"):"-"}</div><div>${c.active?"Aktif":"Nonaktif"}</div><button class="danger" onclick="deleteCoupon(${c.id})">Hapus</button></div>`).join("")||"<p class='hint'>Belum ada kode diskon.</p>"}catch(e){document.getElementById("coupons").innerHTML="<p class='hint'>Database belum terhubung.</p>"}}
+async function deleteCoupon(id){if(!confirm("Hapus kode diskon?"))return;try{await api("coupons?id=eq."+id,{method:"DELETE"});loadCoupons()}catch(e){alert("Gagal menghapus.")}}
+if(sessionStorage.getItem("rz_admin")==="1")show();
 </script></body></html>
